@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { AddonsModule } from "./addons/addons.module";
 import { HealthModule } from "./health/health.module";
 import { HooksModule } from "./hooks/hooks.module";
 import { MeModule } from "./me/me.module";
@@ -16,6 +17,7 @@ import { ServersModule } from "./servers/servers.module";
     MeModule,
     NodesModule,
     ServersModule,
+    AddonsModule,
   ],
 })
 export class AppModule {}

@@ -227,3 +227,64 @@ model Server {
   @@index([nodeId])
   @@map("server")
 }
+
+/// A published addon in the registry: a sandboxed WASM module + manifest. The
+/// WASM runs in our control plane (Extism) with no ambient authority — it's a
+/// pure input->output function and the host enforces capabilities when applying
+/// the effects it returns. Curation/approval status arrives in Phase 6.
+model Addon {
+  id          String   @id
+  name        String
+  version     String
+  author      String
+  description String
+  manifest    Json
+  wasm        Bytes
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("addon")
+}
+
+/// An org's installation of an addon, with the capability scopes the admin
+/// granted and per-install config.
+model AddonInstall {
+  id             String   @id @default(cuid())
+  organizationId String
+  addonId        String
+  enabled        Boolean  @default(true)
+  grantedScopes  Json // string[]
+  config         Json // arbitrary key/value config for the addon
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([organizationId, addonId])
+  @@index([organizationId])
+  @@map("addon_install")
+}
+
+/// Per-(org, addon) isolated key/value store the addon reads/writes via effects.
+model AddonKv {
+  id             String   @id @default(cuid())
+  organizationId String
+  addonId        String
+  key            String
+  value          String
+  updatedAt      DateTime @updatedAt
+
+  @@unique([organizationId, addonId, key])
+  @@map("addon_kv")
+}
+
+/// Addon activity feed (log lines emitted by an addon, shown in the UI).
+model AddonLog {
+  id             String   @id @default(cuid())
+  organizationId String
+  addonId        String
+  level          String   @default("info")
+  message        String
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId, addonId])
+  @@map("addon_log")
+}

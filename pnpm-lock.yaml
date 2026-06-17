@@ -25,6 +25,9 @@ importers:
 
   panel/api:
     dependencies:
+      '@extism/extism':
+        specifier: 2.0.0-rc13
+        version: 2.0.0-rc13
       '@game-panel/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
@@ -441,6 +444,9 @@ packages:
     engines: {node: '>=12'}
     cpu: [x64]
     os: [win32]
+
+  '@extism/extism@2.0.0-rc13':
+    resolution: {integrity: sha512-iQ3mrPKOC0WMZ94fuJrKbJmMyz4LQ9Abf8gd4F5ShxKWa+cRKcVzk0EqRQsp5xXsQ2dO3zJTiA6eTc4Ihf7k+A==}
 
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -2656,6 +2662,8 @@ snapshots:
 
   '@esbuild/win32-x64@0.21.5':
     optional: true
+
+  '@extism/extism@2.0.0-rc13': {}
 
   '@isaacs/cliui@8.0.2':
     dependencies:

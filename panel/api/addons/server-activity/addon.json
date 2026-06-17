@@ -1,0 +1,15 @@
+{
+  "manifestVersion": 1,
+  "id": "gg.xylonode.server-activity",
+  "name": "Server Activity Logger",
+  "version": "1.0.0",
+  "author": "Xylonode",
+  "description": "Logs server lifecycle events, counts starts in its KV store, and can post to a webhook (e.g. Discord).",
+  "permissions": ["kv:read", "kv:write", "net:fetch"],
+  "network": { "allow": ["discord.com", "discordapp.com", "example.com"] },
+  "hooks": [
+    { "on": "server.started", "handler": "on_event" },
+    { "on": "server.stopped", "handler": "on_event" }
+  ],
+  "limits": { "timeoutMs": 2000, "memoryMiB": 32 }
+}
