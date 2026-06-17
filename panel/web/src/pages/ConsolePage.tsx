@@ -109,6 +109,9 @@ export function ConsolePage() {
                 {p.label}
               </button>
             ))}
+            <Link className="btnlink" to={`/servers/${id}/files`}>
+              Files
+            </Link>
             <button onClick={remove}>Delete</button>
           </div>
         </div>

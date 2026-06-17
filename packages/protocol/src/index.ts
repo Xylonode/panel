@@ -50,7 +50,27 @@ export type PanelToDaemon =
   | Envelope<"server.delete", { serverId: string }>
   | Envelope<"server.command", { serverId: string; command: string }>
   | Envelope<"console.subscribe", { serverId: string }>
-  | Envelope<"console.unsubscribe", { serverId: string }>;
+  | Envelope<"console.unsubscribe", { serverId: string }>
+  | Envelope<"files.list", { serverId: string; path: string }>
+  | Envelope<"files.read", { serverId: string; path: string }>
+  | Envelope<"files.write", { serverId: string; path: string; content: string }>
+  | Envelope<"files.delete", { serverId: string; path: string }>
+  | Envelope<"files.rename", { serverId: string; from: string; to: string }>
+  | Envelope<"files.mkdir", { serverId: string; path: string }>;
+
+/** A single entry in a directory listing, relative to the server's data root. */
+export interface FileEntry {
+  name: string;
+  type: "file" | "dir";
+  size: number;
+  /** ISO-8601 mtime. */
+  modified: string;
+}
+
+/** Result of a file operation, correlated to the request by `id`. */
+export type FilesResult =
+  | { ok: true; entries?: FileEntry[]; content?: string }
+  | { ok: false; error: string };
 
 /** Messages the daemon sends UP to the panel (responses + events). */
 export type DaemonToPanel =
@@ -59,7 +79,8 @@ export type DaemonToPanel =
   | Envelope<"ack", { ok: true } | { ok: false; error: string }>
   | Envelope<"event.server.state", { serverId: string; state: ServerState; exitCode?: number }>
   | Envelope<"event.server.stats", { serverId: string; stats: ServerStats }>
-  | Envelope<"event.console.line", { serverId: string; line: string; stream: "stdout" | "stderr" }>;
+  | Envelope<"event.console.line", { serverId: string; line: string; stream: "stdout" | "stderr" }>
+  | Envelope<"files.result", FilesResult>;
 
 /** What the panel hands the daemon to materialize a Docker container. */
 export interface ServerSpec {

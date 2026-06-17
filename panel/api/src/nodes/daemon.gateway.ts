@@ -2,9 +2,16 @@ import { Injectable, Logger, type OnApplicationBootstrap } from "@nestjs/common"
 import { HttpAdapterHost } from "@nestjs/core";
 import { WebSocketServer, WebSocket } from "ws";
 import { fromNodeHeaders } from "better-auth/node";
+import { randomUUID } from "node:crypto";
 import type { IncomingMessage } from "node:http";
 import type { Duplex } from "node:stream";
-import type { DaemonToPanel, HookEventName, PanelToDaemon, ServerState } from "@game-panel/protocol";
+import type {
+  DaemonToPanel,
+  FilesResult,
+  HookEventName,
+  PanelToDaemon,
+  ServerState,
+} from "@game-panel/protocol";
 import { PrismaService } from "../prisma/prisma.service";
 import { HookBus } from "../hooks/hook-bus.service";
 import { auth } from "../auth/auth";
@@ -46,6 +53,10 @@ export class DaemonGateway implements OnApplicationBootstrap {
   private readonly daemons = new Map<string, DaemonConn>();
   private readonly consoles = new Map<string, Set<ConsoleConn>>(); // serverId -> browsers
   private readonly serverMeta = new Map<string, { nodeId: string; orgId: string }>();
+  private readonly pending = new Map<
+    string,
+    { nodeId: string; resolve: (r: FilesResult) => void; timer: NodeJS.Timeout }
+  >();
 
   constructor(
     private readonly adapterHost: HttpAdapterHost,
@@ -69,6 +80,23 @@ export class DaemonGateway implements OnApplicationBootstrap {
     if (!conn || conn.socket.readyState !== WebSocket.OPEN) return false;
     conn.socket.send(JSON.stringify(message));
     return true;
+  }
+
+  /** Sends a command and awaits the daemon's correlated files.result reply. */
+  request(nodeId: string, message: PanelToDaemon, timeoutMs = 15000): Promise<FilesResult> {
+    const conn = this.daemons.get(nodeId);
+    if (!conn || conn.socket.readyState !== WebSocket.OPEN) {
+      return Promise.reject(new Error("Node is offline"));
+    }
+    const id = randomUUID();
+    return new Promise<FilesResult>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.pending.delete(id);
+        reject(new Error("Daemon request timed out"));
+      }, timeoutMs);
+      this.pending.set(id, { nodeId, resolve, timer });
+      conn.socket.send(JSON.stringify({ ...message, id }));
+    });
   }
 
   private async handleUpgrade(req: IncomingMessage, socket: Duplex, head: Buffer): Promise<void> {
@@ -153,6 +181,16 @@ export class DaemonGateway implements OnApplicationBootstrap {
         const meta = await this.ownedServerMeta(msg.payload.serverId, nodeId);
         if (!meta) return;
         this.fanout(msg.payload.serverId, raw);
+        return;
+      }
+      case "files.result": {
+        const id = msg.id;
+        if (!id) return;
+        const p = this.pending.get(id);
+        if (!p || p.nodeId !== nodeId) return; // only the asked node may answer
+        clearTimeout(p.timer);
+        this.pending.delete(id);
+        p.resolve(msg.payload);
         return;
       }
       default:
