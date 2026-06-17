@@ -4,8 +4,70 @@ import { authClient, useSession } from "../lib/auth-client";
 
 type Step = "idle" | "scan";
 
-/** Two-factor (TOTP) enrollment: enable → scan QR → verify, and disable. */
 export function SecurityPage() {
+  return (
+    <>
+      <div className="page-head">
+        <h1>Security</h1>
+      </div>
+      <ChangePassword />
+      <TwoFactor />
+    </>
+  );
+}
+
+/** Change the account password (requires the current one). */
+function ChangePassword() {
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setMsg(null);
+    const res = await authClient.changePassword({
+      currentPassword: current,
+      newPassword: next,
+      revokeOtherSessions: true,
+    });
+    if (res.error) {
+      setMsg({ ok: false, text: res.error.message ?? "Could not change password" });
+    } else {
+      setMsg({ ok: true, text: "Password changed." });
+      setCurrent("");
+      setNext("");
+    }
+  }
+
+  return (
+    <section className="card">
+      <h2>Password</h2>
+      <form onSubmit={submit} className="form">
+        <label>
+          Current password
+          <input type="password" value={current} onChange={(e) => setCurrent(e.target.value)} required />
+        </label>
+        <label>
+          New password
+          <input
+            type="password"
+            value={next}
+            onChange={(e) => setNext(e.target.value)}
+            minLength={8}
+            required
+          />
+        </label>
+        <button type="submit" className="primary">
+          Change password
+        </button>
+        {msg && <p className={`status ${msg.ok ? "up" : "down"}`}>{msg.text}</p>}
+      </form>
+    </section>
+  );
+}
+
+/** Two-factor (TOTP) enrollment: enable → scan QR → verify, and disable. */
+function TwoFactor() {
   const { data: session, refetch } = useSession();
   const enabled = session?.user.twoFactorEnabled ?? false;
 
