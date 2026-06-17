@@ -61,6 +61,13 @@ export function Layout() {
 
   const crumbs = location.pathname.split("/").filter(Boolean);
   const initial = (session?.user.name ?? session?.user.email ?? "?").charAt(0).toUpperCase();
+  const isAdmin = session?.user.role === "admin";
+  const isImpersonating = Boolean(session?.session.impersonatedBy);
+
+  async function returnToAdmin() {
+    await authClient.admin.stopImpersonating();
+    window.location.href = "/admin";
+  }
 
   return (
     <div className="app">
@@ -83,6 +90,15 @@ export function Layout() {
             })}
           </div>
         ))}
+        {isAdmin && (
+          <div className="nav-section">
+            <div className="label">Staff</div>
+            <NavLink to="/admin" className="nav-item">
+              <IconShield />
+              Platform admin
+            </NavLink>
+          </div>
+        )}
       </aside>
 
       <div className="main">
@@ -102,6 +118,13 @@ export function Layout() {
             {initial}
           </button>
         </header>
+
+        {isImpersonating && (
+          <div className="impersonation-bar">
+            👤 Impersonating <b>{session?.user.email}</b>
+            <button onClick={returnToAdmin}>Return to admin</button>
+          </div>
+        )}
 
         <nav className="breadcrumb">
           <b>Home</b>

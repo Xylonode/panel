@@ -40,6 +40,7 @@ export class AddonsService implements OnApplicationBootstrap {
           description: manifest.description,
           manifest,
           wasm,
+          published: true, // bundled/first-party addons are trusted
         },
         update: {
           name: manifest.name,
@@ -48,6 +49,7 @@ export class AddonsService implements OnApplicationBootstrap {
           description: manifest.description,
           manifest,
           wasm,
+          published: true,
         },
       });
       seeded++;
@@ -55,9 +57,10 @@ export class AddonsService implements OnApplicationBootstrap {
     this.logger.log(`Seeded ${seeded} addon(s) into the registry`);
   }
 
-  /** Public registry listing (no wasm bytes). */
+  /** Public registry listing — only staff-approved (published) addons. */
   registry() {
     return this.prisma.addon.findMany({
+      where: { published: true },
       select: { id: true, name: true, version: true, author: true, description: true, manifest: true },
       orderBy: { name: "asc" },
     });

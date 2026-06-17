@@ -722,6 +722,21 @@ textarea:focus {
   grid-template-columns: repeat(2, max-content);
   gap: 0.35rem 1.5rem;
 }
+.impersonation-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 1.5rem;
+  background: var(--peach);
+  color: var(--peach-ink);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.impersonation-bar button {
+  margin-left: auto;
+  padding: 0.25rem 0.7rem;
+}
+
 .org-chip {
   font-size: 0.78rem;
   color: var(--text-muted);

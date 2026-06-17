@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
@@ -51,6 +52,7 @@ export class ServersService {
       environment?: Record<string, string>;
     },
   ) {
+    await this.assertNotSuspended(orgId);
     const node = await this.prisma.node.findFirst({
       where: { id: input.nodeId, organizationId: orgId },
     });
@@ -93,6 +95,8 @@ export class ServersService {
   }
 
   async power(orgId: string, serverId: string, action: PowerAction) {
+    // Suspended orgs may still stop/kill, but not start/restart.
+    if (action === "start" || action === "restart") await this.assertNotSuspended(orgId);
     const server = await this.get(orgId, serverId);
     if (!this.gateway.getOnlineNodeIds().has(server.nodeId)) {
       throw new ConflictException("Node is offline");
@@ -169,6 +173,13 @@ export class ServersService {
         },
       ],
     };
+  }
+
+  private async assertNotSuspended(orgId: string): Promise<void> {
+    const mod = await this.prisma.orgModeration.findUnique({ where: { organizationId: orgId } });
+    if (mod?.suspended) {
+      throw new ForbiddenException("This organization is suspended. Contact support.");
+    }
   }
 
   private async allocatePort(nodeId: string): Promise<number> {

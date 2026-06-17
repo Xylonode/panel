@@ -8,6 +8,7 @@ import { ServersPage } from "./pages/ServersPage";
 import { ConsolePage } from "./pages/ConsolePage";
 import { FilesPage } from "./pages/FilesPage";
 import { AddonsPage } from "./pages/AddonsPage";
+import { AdminPage } from "./pages/AdminPage";
 import { MembersPage } from "./pages/MembersPage";
 import { SecurityPage } from "./pages/SecurityPage";
 
@@ -23,6 +24,7 @@ export function App() {
           <Route path="/servers/:id" element={<ConsolePage />} />
           <Route path="/servers/:id/files" element={<FilesPage />} />
           <Route path="/addons" element={<AddonsPage />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="/members" element={<MembersPage />} />
           <Route path="/security" element={<SecurityPage />} />
         </Route>

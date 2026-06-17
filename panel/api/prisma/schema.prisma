@@ -240,10 +240,25 @@ model Addon {
   description String
   manifest    Json
   wasm        Bytes
+  /// Marketplace curation: only published addons appear in the public registry.
+  /// Bundled/first-party addons are seeded published; uploads await staff review.
+  published   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@map("addon")
+}
+
+/// Platform-staff moderation state for an org (we own this; the better-auth
+/// Organization table stays untouched so its CLI can regenerate it). A suspended
+/// org cannot create or power on servers.
+model OrgModeration {
+  organizationId String   @id
+  suspended      Boolean  @default(false)
+  reason         String?
+  updatedAt      DateTime @updatedAt
+
+  @@map("org_moderation")
 }
 
 /// An org's installation of an addon, with the capability scopes the admin
