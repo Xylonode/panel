@@ -23,6 +23,7 @@ export function Layout() {
           <NavLink to="/" end>
             Dashboard
           </NavLink>
+          <NavLink to="/nodes">Nodes</NavLink>
           <NavLink to="/members">Members</NavLink>
           <NavLink to="/security">Security</NavLink>
         </nav>

@@ -3,6 +3,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Layout } from "./components/Layout";
 import { LoginPage } from "./pages/LoginPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { NodesPage } from "./pages/NodesPage";
 import { MembersPage } from "./pages/MembersPage";
 import { SecurityPage } from "./pages/SecurityPage";
 
@@ -13,6 +14,7 @@ export function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
           <Route path="/" element={<DashboardPage />} />
+          <Route path="/nodes" element={<NodesPage />} />
           <Route path="/members" element={<MembersPage />} />
           <Route path="/security" element={<SecurityPage />} />
         </Route>

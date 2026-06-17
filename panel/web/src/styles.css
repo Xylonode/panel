@@ -295,3 +295,23 @@ select {
   grid-template-columns: repeat(2, max-content);
   gap: 0.35rem 1.5rem;
 }
+
+/* ---- nodes ---- */
+.token-reveal {
+  border-color: #4f7cff;
+}
+
+.cmd {
+  background: #0f1421;
+  border: 1px solid #2c3447;
+  border-radius: 8px;
+  padding: 0.75rem 0.9rem;
+  overflow-x: auto;
+  font-size: 0.82rem;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.actions select {
+  margin-right: 0.25rem;
+}
