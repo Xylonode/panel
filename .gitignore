@@ -1,0 +1,27 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# builds
+dist/
+build/
+*.tsbuildinfo
+
+# go daemon
+agent/bin/
+agent/*.test
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# editor / os
+.DS_Store
+*.log
+.idea/
+.vscode/
+
+# prisma
+panel/api/prisma/*.db
+panel/api/prisma/*.db-journal

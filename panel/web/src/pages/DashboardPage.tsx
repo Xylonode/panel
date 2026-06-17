@@ -1,0 +1,74 @@
+import { useState } from "react";
+import { authClient } from "../lib/auth-client";
+
+/** Organization list / create / switch — the tenant home. */
+export function DashboardPage() {
+  const { data: orgs, isPending } = authClient.useListOrganizations();
+  const { data: activeOrg } = authClient.useActiveOrganization();
+  const [orgName, setOrgName] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function createOrg(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    const slug = slugify(orgName);
+    const res = await authClient.organization.create({ name: orgName, slug });
+    setBusy(false);
+    if (res.error) {
+      setError(res.error.message ?? "Could not create organization");
+      return;
+    }
+    setOrgName("");
+    await authClient.organization.setActive({ organizationId: res.data.id });
+  }
+
+  return (
+    <section className="card">
+      <h2>Organizations</h2>
+      {isPending && <p className="status">Loading…</p>}
+      {!isPending && !orgs?.length && (
+        <p className="status">No organizations yet — create one below.</p>
+      )}
+      <ul className="orglist">
+        {orgs?.map((o) => (
+          <li key={o.id}>
+            <span>
+              {o.name} <code>{o.slug}</code>
+            </span>
+            {activeOrg?.id === o.id ? (
+              <strong className="status up">active</strong>
+            ) : (
+              <button
+                onClick={() => authClient.organization.setActive({ organizationId: o.id })}
+              >
+                Switch
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+      <form onSubmit={createOrg} className="inline-form">
+        <input
+          placeholder="New organization name"
+          value={orgName}
+          onChange={(e) => setOrgName(e.target.value)}
+          required
+        />
+        <button type="submit" className="primary" disabled={busy}>
+          {busy ? "…" : "Create"}
+        </button>
+      </form>
+      {error && <p className="status down">{error}</p>}
+    </section>
+  );
+}
+
+function slugify(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
