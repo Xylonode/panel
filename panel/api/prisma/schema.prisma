@@ -182,3 +182,48 @@ model Node {
   @@index([organizationId])
   @@map("node")
 }
+
+/// A service definition (Pterodactyl-style "egg"): the Docker image, optional
+/// startup command override, how to stop it, and the variables operators fill
+/// in. organizationId null = a built-in/global egg available to every org.
+model Egg {
+  id             String   @id @default(cuid())
+  organizationId String?
+  name           String
+  description    String?
+  dockerImage    String
+  startup        String   @default("")
+  stopCommand    String? // stdin command sent before stop (e.g. "stop"); else SIGTERM
+  variables      Json // [{ name, envVariable, defaultValue, userEditable }]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([organizationId])
+  @@map("egg")
+}
+
+/// A game server instance: one Docker container managed by a node's daemon.
+/// `state` mirrors the last state the daemon reported.
+model Server {
+  id             String   @id @default(cuid())
+  organizationId String
+  nodeId         String
+  eggId          String
+  name           String
+  dockerImage    String
+  startup        String   @default("")
+  stopCommand    String?
+  environment    Json // resolved envVariable -> value map
+  memoryMiB      Int      @default(1024)
+  cpuPercent     Int      @default(100)
+  diskMiB        Int      @default(5120)
+  primaryPort    Int
+  state          String   @default("offline")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([nodeId, primaryPort])
+  @@index([organizationId])
+  @@index([nodeId])
+  @@map("server")
+}
